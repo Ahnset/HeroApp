@@ -15,6 +15,8 @@ import com.example.mrdeveloper.superhero.R;
 import com.example.mrdeveloper.superhero.api.hero.Api;
 import com.example.mrdeveloper.superhero.api.hero.Hero;
 import com.example.mrdeveloper.superhero.ui.base.view.BaseFragment;
+import com.example.mrdeveloper.superhero.ui.base.view.BaseViewFragment;
+import com.example.mrdeveloper.superhero.ui.main.presenter.MainPresenter;
 import com.example.mrdeveloper.superhero.ui.main.view.adapters.HeroRvAdapter;
 
 import java.util.List;
@@ -26,24 +28,17 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class MainFragment extends BaseFragment {
-
-    @Inject
-    Retrofit retrofit;
+public class MainFragment extends BaseViewFragment<MainPresenter> implements MainView {
 
     @Inject
     HeroRvAdapter adapter;
 
-    Call<List<Hero>> call;
-
     RecyclerView recyclerView;
     LinearLayoutManager layoutManager;
-    
 
     public MainFragment() {
 
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -58,29 +53,17 @@ public class MainFragment extends BaseFragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Api api = retrofit.create(Api.class);
-        call = api.getHeroes();
+        presenter.setup();
+        presenter.getHeroes(activityContext, adapter);
+    }
 
+    @Override
+    public void setupRecyclerView() {
         layoutManager = new LinearLayoutManager(activityContext);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
 
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
-
-        loadHero();
     }
 
-    public void loadHero() {
-        call.enqueue(new Callback<List<Hero>>() {
-            @Override
-            public void onResponse(Call<List<Hero>> call, Response<List<Hero>> response) {
-                adapter.updateList(response.body());
-            }
-
-            @Override
-            public void onFailure(Call<List<Hero>> call, Throwable t) {
-                Toast.makeText(activityContext, "Network Error!", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
 }
